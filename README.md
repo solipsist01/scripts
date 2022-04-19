@@ -1,3 +1,1 @@
 # scripts
-# test
-# hoi
