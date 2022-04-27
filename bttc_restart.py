@@ -2,7 +2,7 @@ import os
 import docker
 
 client = docker.from_env()
-client.images.pull('solipsist01/go-btfs')
+client.images.pull('solipsist01/go-btfs:latest')
 for container in client.containers.list():
     if "btfs" in container.name:
         mounts = container.attrs['Mounts']
