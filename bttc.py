@@ -7,7 +7,15 @@ import json
 import graphyte
 import requests
 
-graphyte.init('graphite', prefix='miningtest')
+#os.environ['GRAPHITE_HOSTNAME'] = ''
+#os.environ['GRAPHITE_PORT'] = ''
+#os.environ['GRAPHITE_prefix'] = ''
+
+graphite_hostname = os.getenv('GRAPHITE_HOSTNAME')
+graphite_port = os.getenv('GRAPHITE_PORT')
+graphite_prefix = os.environ.get('GRAPHITE_PREFIX')
+
+graphyte.init(graphite_hostname, port=graphite_port, prefix=graphite_prefix)
 
 def background(f):
     def wrapped(*args, **kwargs):
