@@ -63,7 +63,7 @@ for line in process.stdout:
 
 
 process = subprocess.Popen(
-    (['docker-compose', 'env-file', '/docker/compose/btfs/.env', '--file', '/docker/compose/btfs/docker-compose.yml', 'up', '-d']), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    (['docker-compose', '--env-file', '/docker/compose/btfs/.env', '--file', '/docker/compose/btfs/docker-compose.yml', 'up', '-d']), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
 )
 for line in process.stdout:
     sys.stdout.write(line.decode('utf-8'))
