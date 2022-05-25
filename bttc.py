@@ -34,7 +34,7 @@ def fetch_hostid(container):
 
             return hostid
 
-@background
+#@background
 def fetch_btfs_data(node, hostid, container):
     timestamp = datetime.timestamp(datetime.now())
     uri = "https://scan-backend.btfs.io/api/v1/node/addr_info?id=" +hostid
