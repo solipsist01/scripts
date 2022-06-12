@@ -50,8 +50,8 @@ def bttc_collect(node, hostid, container, bttc_destination_address):
                 btfs_command = "btfs bttc send-btt-to " + bttc_destination_address + " " + str(to_send)
                 print(str(btfs_command))
 
-                output = container.exec_run(btfs_command)
-                print(output)
+                #output = container.exec_run(btfs_command)
+                #print(output)
 
 bttc_destination_address = os.getenv('BTTC_DESTINATION_ADDRESS')  
 
