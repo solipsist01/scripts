@@ -47,10 +47,11 @@ def bttc_collect(node, hostid, container, bttc_destination_address):
             to_send_readable = str(round(to_send / 1000000000000000000))
             if to_send > 0:
                 print("sending " + to_send_readable + " from: " + bttc_source_address + " to: " + bttc_destination_address)
-                btfs_command = "btfs bttc send-btt-to " + str(to_send) + " " + bttc_destination_address
+                btfs_command = "btfs bttc send-btt-to " + bttc_destination_address + " " + str(to_send)
                 print(str(btfs_command))
 
-                #container.exec_run(btfs_command)
+                output = container.exec_run(btfs_command)
+                print(output)
 
 bttc_destination_address = os.getenv('BTTC_DESTINATION_ADDRESS')  
 
