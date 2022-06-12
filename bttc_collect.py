@@ -45,6 +45,7 @@ def bttc_collect(node, hostid, container, bttc_destination_address):
             #keep 10.000 
             to_send = int(bttc_addr_btt_balance - 10000000000000000000000)
             to_send_readable = str(round(to_send / 1000000000000000000))
+            print("Checking ammount to send: " + str(to_send_readable))
             if to_send > 0:
                 print("sending " + to_send_readable + " from: " + bttc_source_address + " to: " + bttc_destination_address)
                 btfs_command = "btfs bttc send-btt-to " + bttc_destination_address + " " + str(to_send)
