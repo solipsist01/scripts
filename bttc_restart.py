@@ -61,6 +61,11 @@ process = subprocess.Popen(
 for line in process.stdout:
     sys.stdout.write(line.decode('utf-8'))
 
+process = subprocess.Popen(
+    (['docker-compose', '--file', '/docker/compose/btfs/docker-compose.yml', 'down']), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+)
+for line in process.stdout:
+    sys.stdout.write(line.decode('utf-8'))
 
 process = subprocess.Popen(
     (['docker-compose', '--file', '/docker/compose/btfs/docker-compose.yml', 'up', '-d']), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
