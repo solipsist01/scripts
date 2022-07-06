@@ -36,9 +36,10 @@ def fetch_hostid(container):
 
 #@background
 def fetch_btfs_data(node, hostid, container):
+    print(str(container.name))
     timestamp = datetime.timestamp(datetime.now())
     uri = "https://scan-backend.btfs.io/api/v1/node/addr_info?id=" +hostid
-
+    print("Querying: " +uri)
     try:
         response = requests.get(uri).json()
     except:
@@ -56,6 +57,7 @@ def fetch_btfs_data(node, hostid, container):
         graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
 
     uri = "https://scan-backend.btfs.io/api/v0/btfsscan/search/node_info?node_id=" +hostid
+    print("Querying: " +uri)
     try:
         response = requests.get(uri).json()
     except:
@@ -71,6 +73,7 @@ def fetch_btfs_data(node, hostid, container):
     contracts = container.exec_run("btfs storage contracts stat host")
     
     if contracts is not None:
+        print("parsing contract data")
         contract_data = json.loads(contracts.output)
         active_contract_num = contract_data['active_contract_num']
         compensation_paid = contract_data['compensation_paid']
