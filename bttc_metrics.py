@@ -38,6 +38,7 @@ def fetch_hostid(container):
 def fetch_btfs_data(node, hostid, container):
     print(str(container.name))
     timestamp = datetime.timestamp(datetime.now())
+    
     uri = "https://scan-backend.btfs.io/api/v1/node/addr_info?id=" +hostid
     print("Querying: " +uri)
     try:
@@ -47,6 +48,7 @@ def fetch_btfs_data(node, hostid, container):
         response = None
 
     if response is not None:
+        print(response)
         bttc_addr_btt_balance = round(float(response['data']['bttc_addr_btt_balance']) / 1000000000000000000)
         bttc_addr_wbtt_balance = round(float(response['data']['bttc_addr_wbtt_balance']) / 1000000000000000000)
         vault_addr_btt_balance = round(float(response['data']['vault_addr_btt_balance']) / 1000000000000000000)
@@ -65,6 +67,7 @@ def fetch_btfs_data(node, hostid, container):
         response = None
 
     if response is not None:
+        print(response)
         hostscore = response['data']['score']
         storage_used = response['data']['storage_used']
         graphyte.send('btt.' + node + '.host.storage_used', storage_used, timestamp=timestamp)
