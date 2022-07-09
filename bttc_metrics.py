@@ -106,7 +106,7 @@ def fetch_btfs_data(node, hostid, container):
 
     if response is not None:
         vault_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
-        graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vualt_addr_wbtt_balance, timestamp=timestamp)
+        graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
 
 
 client = docker.from_env()
