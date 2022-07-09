@@ -100,7 +100,7 @@ def fetch_btfs_data(container):
         graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
 
 ### wbtt wallet balance
-    uri = "http://" + container.name + ":5001/api/v1/wbttbalance?arg=" + bttcaddress
+    uri = "http://" + container.name + ":5001/api/v1/vault/wbttbalance?arg=" + bttcaddress
     try:
         response = requests.post(uri).json()
     except:
