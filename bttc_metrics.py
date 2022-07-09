@@ -38,7 +38,8 @@ def fetch_hostid(container):
 def fetch_btfs_data(node, hostid, container):
     print(str(container.name))
     timestamp = datetime.timestamp(datetime.now())
-    
+
+### fetch wallet address    
     uri = "http://" + container.name + ":5001/api/v1/id"
     try:
         response = requests.post(uri).json()
@@ -47,6 +48,7 @@ def fetch_btfs_data(node, hostid, container):
         response = None
 
     if response is not None:
+### fetch bttc onchain balance
         bttcaddress = response['BttcAddress']
         response = None
         uri = "http://" + container.name + ":5001/api/v1/cheque/bttbalance?arg=" + bttcaddress
@@ -62,7 +64,8 @@ def fetch_btfs_data(node, hostid, container):
             graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
 
 
-    uri = "https://scan-backend.btfs.io/api/v0/btfsscan/search/node_info?node_id=" +hostid
+    ### fetch host score and storage in use
+    uri = "http://" + container.name + ":5001/api/v1/storage/stats/info"
     print("Querying: " +uri)
     try:
         response = requests.get(uri).json()
@@ -72,12 +75,13 @@ def fetch_btfs_data(node, hostid, container):
 
     if response is not None:
         print(response)
-        hostscore = response['data']['score']
-        storage_used = response['data']['storage_used']
+        hostscore = response['host_stats']['score']
+        storage_used = response['host_stats']['storage_used']
         graphyte.send('btt.' + node + '.host.storage_used', storage_used, timestamp=timestamp)
         graphyte.send('btt.' + node + '.host.score', hostscore, timestamp=timestamp)
 
-    uri = "http://" + container.name + ":5001/api/v1/id"
+### fetch Contract Data ####
+    uri = "http://" + container.name + ":5001/api/v1/storage/contracts/stat?arg=host"
     try:
         response = requests.post(uri).json()
     except:
@@ -85,24 +89,14 @@ def fetch_btfs_data(node, hostid, container):
         response = None
 
     if response is not None:
-        bttcaddress = response['BttcAddress']
-        response = None
-        uri = "http://" + container.name + ":5001/api/v1/storage/contracts/stat?arg=host"
-        
-        try:
-            response = requests.post(uri).json()
-        except:
-            ConnectionError
-            response = None      
+        print("parsing contract data")
+        active_contract_num = response['active_contract_num']
+        compensation_paid = response['compensation_paid']
+        compensation_outstanding = response['compensation_outstanding']
+        graphyte.send('btt.' + node + '.host.active_contract_num', active_contract_num, timestamp=timestamp)
+        graphyte.send('btt.' + node + '.host.compensation_paid', compensation_paid, timestamp=timestamp)
+        graphyte.send('btt.' + node + '.host.compensation_outstanding', compensation_outstanding, timestamp=timestamp)
 
-        if response is not None:
-            print("parsing contract data")
-            active_contract_num = response['active_contract_num']
-            compensation_paid = response['compensation_paid']
-            compensation_outstanding = response['compensation_outstanding']
-            graphyte.send('btt.' + node + '.host.active_contract_num', active_contract_num, timestamp=timestamp)
-            graphyte.send('btt.' + node + '.host.compensation_paid', compensation_paid, timestamp=timestamp)
-            graphyte.send('btt.' + node + '.host.compensation_outstanding', compensation_outstanding, timestamp=timestamp)
 
 client = docker.from_env()
 for container in client.containers.list():
