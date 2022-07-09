@@ -23,19 +23,9 @@ def background(f):
 
     return wrapped
 
-def fetch_hostid(container):
-    mounts = container.attrs['Mounts']
-    for mount in mounts:
-        if "btfs" in mount['Source']:
-            configfile = mount['Source'] + '/config'
-            f = open(configfile, "r")
-            jdata = json.loads(f.read())
-            hostid = jdata['Identity']['PeerID']
-
-            return hostid
-
-#@background
-def fetch_btfs_data(node, hostid, container):
+@background
+def fetch_btfs_data(container):
+    node = container.name
     print(str(container.name))
     timestamp = datetime.timestamp(datetime.now())
 
@@ -124,4 +114,4 @@ def fetch_btfs_data(node, hostid, container):
 client = docker.from_env()
 for container in client.containers.list():
     if "btfs" in container.name:
-        fetch_btfs_data(container.name, fetch_hostid(container), container)
+        fetch_btfs_data(container)
