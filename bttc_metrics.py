@@ -39,24 +39,29 @@ def fetch_btfs_data(node, hostid, container):
     print(str(container.name))
     timestamp = datetime.timestamp(datetime.now())
     
-    uri = "https://scan-backend.btfs.io/api/v1/node/addr_info?id=" +hostid
-    print("Querying: " +uri)
+    uri = "http://" + container.name + ":5001/api/v1/id"
+
     try:
-        response = requests.get(uri).json()
+        response = requests.post(uri).json()
     except:
         ConnectionError
         response = None
 
     if response is not None:
-        print(response)
-        bttc_addr_btt_balance = round(float(response['data']['bttc_addr_btt_balance']) / 1000000000000000000)
-        bttc_addr_wbtt_balance = round(float(response['data']['bttc_addr_wbtt_balance']) / 1000000000000000000)
-        vault_addr_btt_balance = round(float(response['data']['vault_addr_btt_balance']) / 1000000000000000000)
-        vault_addr_wbtt_balance = round(float(response['data']['vault_addr_wbtt_balance']) / 1000000000000000000)
-        graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
-        graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_wbtt_balance', bttc_addr_wbtt_balance, timestamp=timestamp)
-        graphyte.send('btt.' + node + '.bttc_chain.vault_addr_btt_balance', vault_addr_btt_balance, timestamp=timestamp)
-        graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
+        bttcaddress = response['BttcAddress']
+        response = None
+        uri = "http://" + container.name + ":5001/api/v1/cheque/bttbalance?arg=" + bttcaddress
+        
+        try:
+            response = requests.post(uri).json()
+        except:
+            ConnectionError
+            response = None
+
+        if response is not None:
+            bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
+            graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
+
 
     uri = "https://scan-backend.btfs.io/api/v0/btfsscan/search/node_info?node_id=" +hostid
     print("Querying: " +uri)
