@@ -97,6 +97,7 @@ def fetch_btfs_data(node, hostid, container):
         graphyte.send('btt.' + node + '.host.compensation_paid', compensation_paid, timestamp=timestamp)
         graphyte.send('btt.' + node + '.host.compensation_outstanding', compensation_outstanding, timestamp=timestamp)
 
+### Vault WBTT Balance
     uri = "http://" + container.name + ":5001/api/v1/vault/balance"
     try:
         response = requests.post(uri).json()
@@ -108,6 +109,17 @@ def fetch_btfs_data(node, hostid, container):
         vault_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
         graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
 
+### wbtt wallet balance
+    uri = "http://" + container.name + ":5001/api/v1/wbttbalance?arg=" + bttcaddress
+    try:
+        response = requests.post(uri).json()
+    except:
+        ConnectionError
+        response = None
+
+    if response is not None:
+        bttc_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
+        graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_wbtt_balance', bttc_addr_wbtt_balance, timestamp=timestamp)
 
 client = docker.from_env()
 for container in client.containers.list():
