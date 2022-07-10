@@ -66,6 +66,7 @@ def fetch_btfs_data(container):
     if response is not None:
         hostscore = response['host_stats']['score']
         storage_used = response['host_stats']['storage_used']
+        print("score: " + hostscore)
         graphyte.send('btt.' + node + '.host.score', hostscore, timestamp=timestamp)
         graphyte.send('btt.' + node + '.host.storage_used', storage_used, timestamp=timestamp)
         
