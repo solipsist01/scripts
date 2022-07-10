@@ -64,11 +64,11 @@ def fetch_btfs_data(container):
         response = None
 
     if response is not None:
-        print(response)
         hostscore = response['host_stats']['score']
         storage_used = response['host_stats']['storage_used']
-        graphyte.send('btt.' + node + '.host.storage_used', storage_used, timestamp=timestamp)
         graphyte.send('btt.' + node + '.host.score', hostscore, timestamp=timestamp)
+        graphyte.send('btt.' + node + '.host.storage_used', storage_used, timestamp=timestamp)
+        
 
 ### fetch Contract Data ####
     uri = "http://" + container.name + ":5001/api/v1/storage/contracts/stat?arg=host"
