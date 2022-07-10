@@ -58,7 +58,7 @@ def fetch_btfs_data(container):
     uri = "http://" + container.name + ":5001/api/v1/storage/stats/info"
     print("Querying: " +uri)
     try:
-        response = requests.get(uri).json()
+        response = requests.post(uri).json()
     except:
         ConnectionError
         response = None
