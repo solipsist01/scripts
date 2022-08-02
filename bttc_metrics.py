@@ -30,19 +30,10 @@ def fetch_btfs_data(container):
     timestamp = datetime.timestamp(datetime.now())
 
 ### fetch wallet address    
-    uri = "http://" + container.name + ":5001/api/v1/id"
-    try:
-        response = requests.post(uri).json()
-    except:
-        ConnectionError
-        response = None
+    bttc_addr_btt_balance is None
+    while bttc_addr_btt_balance is None:
 
-    if response is not None:
-### fetch bttc onchain balance
-        bttcaddress = response['BttcAddress']
-        response = None
-        uri = "http://" + container.name + ":5001/api/v1/cheque/bttbalance?arg=" + bttcaddress
-        
+        uri = "http://" + container.name + ":5001/api/v1/id"
         try:
             response = requests.post(uri).json()
         except:
@@ -50,19 +41,31 @@ def fetch_btfs_data(container):
             response = None
 
         if response is not None:
+    ### fetch bttc onchain balance
+            bttcaddress = response['BttcAddress']
+            response = None
+            uri = "http://" + container.name + ":5001/api/v1/cheque/bttbalance?arg=" + bttcaddress
+            
             try:
-                bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
+                response = requests.post(uri).json()
             except:
-                KeyError
-                bttc_addr_btt_balance = None
+                ConnectionError
+                response = None
 
-        if bttc_addr_btt_balance is not None:
-            while True:
+            if response is not None:
                 try:
-                    graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
-                except OSError:
-                    continue
-                break
+                    bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
+                except:
+                    KeyError
+                    bttc_addr_btt_balance = None
+
+            if bttc_addr_btt_balance is not None:
+                while True:
+                    try:
+                        graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
+                    except OSError:
+                        continue
+                    break
 
 
     ### fetch host score and storage in use
