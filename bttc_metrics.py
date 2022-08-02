@@ -30,8 +30,8 @@ def fetch_btfs_data(container):
     timestamp = datetime.timestamp(datetime.now())
 
 ### fetch wallet address    
-    bttc_addr_btt_balance is None
-    while bttc_addr_btt_balance is None:
+    bttc_addr_btt_balance is False
+    while bttc_addr_btt_balance is False:
 
         uri = "http://" + container.name + ":5001/api/v1/id"
         try:
@@ -65,6 +65,7 @@ def fetch_btfs_data(container):
                         graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
                     except OSError:
                         continue
+                    bttc_addr_btt_balance is True
                     break
 
 
