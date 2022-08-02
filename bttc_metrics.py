@@ -126,27 +126,32 @@ def fetch_btfs_data(container):
 
 
 ### Vault WBTT Balance
-    uri = "http://" + container.name + ":5001/api/v1/vault/balance"
-    try:
-        response = requests.post(uri).json()
-    except:
-        ConnectionError
-        response = None
-
-    if response is not None:
+    wbtt_data = False
+    while wbtt_data == False:
+        uri = "http://" + container.name + ":5001/api/v1/vault/balance"
         try:
-            vault_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
+            response = requests.post(uri).json()
         except:
-            KeyError
-            vault_addr_wbtt_balance = None
+            ConnectionError
+            response = None
 
-    if vault_addr_wbtt_balance is not None:
-        while True:
+
+        if response is not None:
+            print(response)
             try:
-                graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
-            except OSError:
-                continue
-            break
+                vault_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
+            except:
+                KeyError
+                vault_addr_wbtt_balance = None
+
+        if vault_addr_wbtt_balance is not None:
+            while True:
+                try:
+                    graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
+                except OSError:
+                    continue
+                wbtt_data = True
+                break
 
 
 ### wbtt wallet balance
