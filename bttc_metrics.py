@@ -7,9 +7,9 @@ import json
 import graphyte
 import requests
 
-os.environ['GRAPHITE_HOSTNAME'] = 'graphite'
-os.environ['GRAPHITE_PORT'] = '2003'
-os.environ['GRAPHITE_prefix'] = 'test'
+#os.environ['GRAPHITE_HOSTNAME'] = ''
+#os.environ['GRAPHITE_PORT'] = ''
+#os.environ['GRAPHITE_prefix'] = 't'
 
 graphite_hostname = os.getenv('GRAPHITE_HOSTNAME')
 graphite_port = os.getenv('GRAPHITE_PORT')
@@ -128,55 +128,7 @@ def fetch_btfs_data(container):
 
 
 ### Vault WBTT Balance
-    wbtt_data = False
-    while wbtt_data == False:
-        uri = "http://" + container.name + ":5001/api/v1/vault/balance"
-        try:
-            response = requests.post(uri).json()
-        except:
-            ConnectionError
-            response = None
-
-
-        if response is not None:
-            try:
-                vault_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
-            except:
-                KeyError
-                vault_addr_wbtt_balance = None
-
-        if vault_addr_wbtt_balance is not None:
-            while True:
-                try:
-                    graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
-                except OSError:
-                    continue
-                wbtt_data = True
-                break
-
-
-### wbtt wallet balance
-    uri = "http://" + container.name + ":5001/api/v1/vault/wbttbalance?arg=" + bttcaddress
-    try:
-        response = requests.post(uri).json()
-    except:
-        ConnectionError
-        response = None
-
-    if response is not None:
-        try:
-            bttc_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
-        except:
-            KeyError
-            bttc_addr_wbtt_balance = None
-
-    if bttc_addr_wbtt_balance is not None:
-        while True:
-            try:
-                graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_wbtt_balance', bttc_addr_wbtt_balance, timestamp=timestamp)
-            except OSError:
-                continue
-            break
+  
         
 
 client = docker.from_env()
