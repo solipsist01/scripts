@@ -7,9 +7,9 @@ import json
 import graphyte
 import requests
 
-#os.environ['GRAPHITE_HOSTNAME'] = ''
-#os.environ['GRAPHITE_PORT'] = ''
-#os.environ['GRAPHITE_prefix'] = ''
+os.environ['GRAPHITE_HOSTNAME'] = ''
+os.environ['GRAPHITE_PORT'] = ''
+os.environ['GRAPHITE_prefix'] = ''
 
 graphite_hostname = os.getenv('GRAPHITE_HOSTNAME')
 graphite_port = os.getenv('GRAPHITE_PORT')
@@ -28,11 +28,9 @@ def fetch_btfs_data(container):
     node = container.name
     print(str(container.name))
     timestamp = datetime.timestamp(datetime.now())
-
 ### fetch wallet address    
-    bttc_addr_btt_balance is False
-    while bttc_addr_btt_balance is False:
-
+    wallet = False
+    while wallet == False:
         uri = "http://" + container.name + ":5001/api/v1/id"
         try:
             response = requests.post(uri).json()
@@ -65,7 +63,7 @@ def fetch_btfs_data(container):
                         graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
                     except OSError:
                         continue
-                    bttc_addr_btt_balance is True
+                    wallet = True
                     break
 
 
@@ -141,7 +139,6 @@ def fetch_btfs_data(container):
 
 
         if response is not None:
-            print(response)
             try:
                 vault_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
             except:
