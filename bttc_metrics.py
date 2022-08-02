@@ -71,6 +71,7 @@ def fetch_btfs_data(container):
             graphyte.send('btt.' + node + '.host.score', hostscore, timestamp=timestamp)
             graphyte.send('btt.' + node + '.host.storage_used', storage_used, timestamp=timestamp)
         except:
+            KeyError
 
         
         
