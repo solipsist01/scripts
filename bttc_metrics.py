@@ -7,15 +7,15 @@ import json
 import graphyte
 import requests
 
-#os.environ['GRAPHITE_HOSTNAME'] = ''
-#os.environ['GRAPHITE_PORT'] = ''
-#os.environ['GRAPHITE_prefix'] = ''
+os.environ['GRAPHITE_HOSTNAME'] = 'graphite'
+os.environ['GRAPHITE_PORT'] = '2003'
+os.environ['GRAPHITE_prefix'] = 'test'
 
 graphite_hostname = os.getenv('GRAPHITE_HOSTNAME')
 graphite_port = os.getenv('GRAPHITE_PORT')
 graphite_prefix = os.environ.get('GRAPHITE_PREFIX')
 
-graphyte.init(graphite_hostname, port=graphite_port, prefix=graphite_prefix)
+graphyte.init(graphite_hostname, port=graphite_port, prefix=graphite_prefix, raise_send_errors=True)
 
 def background(f):
     def wrapped(*args, **kwargs):
@@ -23,7 +23,7 @@ def background(f):
 
     return wrapped
 
-#@background
+@background
 def fetch_btfs_data(container):
     node = container.name
     print(str(container.name))
@@ -52,9 +52,17 @@ def fetch_btfs_data(container):
         if response is not None:
             try:
                 bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
-                graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
             except:
                 KeyError
+                bttc_addr_btt_balance = None
+
+        if bttc_addr_btt_balance is not None:
+            while True:
+                try:
+                    graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
+                except OSError:
+                    continue
+                break
 
 
     ### fetch host score and storage in use
@@ -71,10 +79,18 @@ def fetch_btfs_data(container):
             hostscore = response['host_stats']['score']
             storage_used = response['host_stats']['storage_used']
             print(hostscore)
-            graphyte.send('btt.' + node + '.host.score', hostscore, timestamp=timestamp)
-            graphyte.send('btt.' + node + '.host.storage_used', storage_used, timestamp=timestamp)
         except:
             KeyError
+            hostscore = None
+
+        if hostscore is not None:
+            while True:
+                try:
+                    graphyte.send('btt.' + node + '.host.score', hostscore, timestamp=timestamp)
+                    graphyte.send('btt.' + node + '.host.storage_used', storage_used, timestamp=timestamp)
+                except OSError:
+                    continue
+                break
 
         
         
@@ -88,13 +104,26 @@ def fetch_btfs_data(container):
         response = None
 
     if response is not None:
-        print("parsing contract data")
-        active_contract_num = response['active_contract_num']
-        compensation_paid = response['compensation_paid']
-        compensation_outstanding = response['compensation_outstanding']
-        graphyte.send('btt.' + node + '.host.active_contract_num', active_contract_num, timestamp=timestamp)
-        graphyte.send('btt.' + node + '.host.compensation_paid', compensation_paid, timestamp=timestamp)
-        graphyte.send('btt.' + node + '.host.compensation_outstanding', compensation_outstanding, timestamp=timestamp)
+        try:
+            print("parsing contract data")
+            active_contract_num = response['active_contract_num']
+            compensation_paid = response['compensation_paid']
+            compensation_outstanding = response['compensation_outstanding']
+        except:
+            KeyError
+            hostscore = None
+
+        if hostscore is not None:
+            while True:
+                try:
+                    graphyte.send('btt.' + node + '.host.active_contract_num', active_contract_num, timestamp=timestamp)
+                    graphyte.send('btt.' + node + '.host.compensation_paid', compensation_paid, timestamp=timestamp)
+                    graphyte.send('btt.' + node + '.host.compensation_outstanding', compensation_outstanding, timestamp=timestamp)
+                except OSError:
+                    continue
+                break
+
+
 
 ### Vault WBTT Balance
     uri = "http://" + container.name + ":5001/api/v1/vault/balance"
@@ -105,8 +134,20 @@ def fetch_btfs_data(container):
         response = None
 
     if response is not None:
-        vault_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
-        graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
+        try:
+            vault_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
+        except:
+            KeyError
+            vault_addr_wbtt_balance = None
+
+    if vault_addr_wbtt_balance is not None:
+        while True:
+            try:
+                graphyte.send('btt.' + node + '.bttc_chain.vault_addr_wbtt_balance', vault_addr_wbtt_balance, timestamp=timestamp)
+            except OSError:
+                continue
+            break
+
 
 ### wbtt wallet balance
     uri = "http://" + container.name + ":5001/api/v1/vault/wbttbalance?arg=" + bttcaddress
@@ -117,8 +158,20 @@ def fetch_btfs_data(container):
         response = None
 
     if response is not None:
-        bttc_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
-        graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_wbtt_balance', bttc_addr_wbtt_balance, timestamp=timestamp)
+        try:
+            bttc_addr_wbtt_balance = round(float(response['balance']) / 1000000000000000000)
+        except:
+            KeyError
+            bttc_addr_wbtt_balance = None
+
+    if bttc_addr_wbtt_balance is not None:
+        while True:
+            try:
+                graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_wbtt_balance', bttc_addr_wbtt_balance, timestamp=timestamp)
+            except OSError:
+                continue
+            break
+        
 
 client = docker.from_env()
 for container in client.containers.list():
