@@ -23,7 +23,7 @@ def background(f):
 
     return wrapped
 
-@background
+#@background
 def fetch_btfs_data(container):
     node = container.name
     print(str(container.name))
