@@ -7,9 +7,9 @@ import json
 import graphyte
 import requests
 
-#os.environ['GRAPHITE_HOSTNAME'] = ''
-#os.environ['GRAPHITE_PORT'] = ''
-#os.environ['GRAPHITE_prefix'] = ''
+os.environ['GRAPHITE_HOSTNAME'] = 'graphite'
+os.environ['GRAPHITE_PORT'] = '2003'
+os.environ['GRAPHITE_prefix'] = 'test'
 
 graphite_hostname = os.getenv('GRAPHITE_HOSTNAME')
 graphite_port = os.getenv('GRAPHITE_PORT')
