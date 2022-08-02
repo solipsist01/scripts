@@ -50,8 +50,11 @@ def fetch_btfs_data(container):
             response = None
 
         if response is not None:
-            bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
-            graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
+            try:
+                bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
+                graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
+            except:
+                KeyError
 
 
     ### fetch host score and storage in use
