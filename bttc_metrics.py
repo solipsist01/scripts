@@ -78,7 +78,7 @@ def fetch_btfs_data(container):
 
     if response is not None:
         try:
-            hostscore = response['host_stats']['score']
+            hostscore = response['host_stats']['level']
             storage_used = response['host_stats']['storage_used']
             print(hostscore)
         except:
