@@ -6,16 +6,57 @@ import asyncio
 import json
 import graphyte
 import requests
+import socket
+import struct
+import _pickle as cPickle
+import sys
 
-#os.environ['GRAPHITE_HOSTNAME'] = 'graphite'
-#os.environ['GRAPHITE_PORT'] = '2003'
-#os.environ['GRAPHITE_prefix'] = 'test'
+class CarbonClient():
 
-graphite_hostname = os.getenv('GRAPHITE_HOSTNAME')
-graphite_port = os.getenv('GRAPHITE_PORT')
-graphite_prefix = os.environ.get('GRAPHITE_PREFIX')
+    def __init__(self, host, port):
+        '''
+        Constructor to create the carbon client
+        '''
+        self._host = str(host)
+        self._port = int(port)
 
-graphyte.init(graphite_hostname, port=graphite_port, prefix=graphite_prefix, raise_send_errors=True)
+    def send_plaintext(self, name, value, timestamp):
+        '''
+        Send a value to carbon using the plaintext protocol
+        '''
+        try:
+            sock = socket.socket()
+            sock.connect((self._host, self._port))
+        except socket.error as msg:
+            print(msg)
+            print('Could not open socket: ' + self._host + ':' + str(self._port))
+            sys.exit(1)
+
+        sock.send("%s %f %d\n" % (name, value, timestamp))
+        sock.close()
+
+    def send_pickle(self, pickle_data):
+        '''
+        Send a value(s) to carbon using the pickle protocol
+        The general idea is that the pickled data forms a list of multi-level tuples:
+            [(path, (timestamp, value)), ...]
+        '''
+        payload = cPickle.dumps(pickle_data)
+        header = struct.pack("!L", len(payload))
+        message = header + payload
+
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((self._host, self._port))
+
+        except socket.error as msg:
+            print(msg)
+            print('Could not open socket: ' + self._host + ':' + str(self._port))
+            sys.exit(1)
+
+        sock.send(message)
+        sock.close()
+
 
 def background(f):
     def wrapped(*args, **kwargs):
@@ -23,15 +64,27 @@ def background(f):
 
     return wrapped
 
-background
+@background
 def fetch_btfs_data(container):
+    global pickle
     node = container.name
     print(str(container.name))
     timestamp = datetime.timestamp(datetime.now())
 ### fetch wallet address    
-    wallet = False
-    while wallet == False:
-        uri = "http://" + container.name + ":5001/api/v1/id"
+
+    uri = "http://" + container.name + ":5001/api/v1/id"
+    try:
+        response = requests.post(uri).json()
+    except:
+        ConnectionError
+        response = None
+
+    if response is not None:
+### fetch bttc onchain balance
+        bttcaddress = response['BttcAddress']
+        response = None
+        uri = "http://" + container.name + ":5001/api/v1/cheque/bttbalance?arg=" + bttcaddress
+        
         try:
             response = requests.post(uri).json()
         except:
@@ -39,37 +92,15 @@ def fetch_btfs_data(container):
             response = None
 
         if response is not None:
-    ### fetch bttc onchain balance
-            bttcaddress = response['BttcAddress']
-            response = None
-            uri = "http://" + container.name + ":5001/api/v1/cheque/bttbalance?arg=" + bttcaddress
-            
             try:
-                response = requests.post(uri).json()
+                bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
+                pickle.append(('mining.btt.' + node + '.bttc_chain.bttc_addr_btt_balance', (timestamp, bttc_addr_btt_balance)))
             except:
-                ConnectionError
-                response = None
-
-            if response is not None:
-                try:
-                    bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
-                except:
-                    KeyError
-                    bttc_addr_btt_balance = None
-
-            if bttc_addr_btt_balance is not None:
-                while True:
-                    try:
-                        graphyte.send('btt.' + node + '.bttc_chain.bttc_addr_btt_balance', bttc_addr_btt_balance, timestamp=timestamp)
-                    except OSError:
-                        continue
-                    wallet = True
-                    break
+                KeyError
 
 
     ### fetch host score and storage in use
     uri = "http://" + container.name + ":5001/api/v1/storage/stats/info"
-    print("Querying: " +uri)
     try:
         response = requests.post(uri).json()
     except:
@@ -80,19 +111,12 @@ def fetch_btfs_data(container):
         try:
             hostscore = response['host_stats']['level']
             storage_used = response['host_stats']['storage_used']
-            print(hostscore)
+            pickle.append(('mining.btt.' + node + '.host.score', (timestamp, hostscore)))
+            pickle.append(('mining.btt.' + node + '.host.storage_used', (timestamp, storage_used)))
         except:
             KeyError
-            hostscore = None
 
-        if hostscore is not None:
-            while True:
-                try:
-                    graphyte.send('btt.' + node + '.host.score', hostscore, timestamp=timestamp)
-                    graphyte.send('btt.' + node + '.host.storage_used', storage_used, timestamp=timestamp)
-                except OSError:
-                    continue
-                break
+    
 
         
         
@@ -107,31 +131,29 @@ def fetch_btfs_data(container):
 
     if response is not None:
         try:
-            print("parsing contract data")
             active_contract_num = response['active_contract_num']
             compensation_paid = response['compensation_paid']
             compensation_outstanding = response['compensation_outstanding']
+            pickle.append(('mining.btt.' + node + '.host.active_contract_num', (timestamp, active_contract_num)))
+            pickle.append(('mining.btt.' + node + '.host.compensation_paid', (timestamp, compensation_paid)))
+            pickle.append(('mining.btt.' + node + '.host.compensation_outstanding', (timestamp, compensation_outstanding)))
         except:
             KeyError
-            hostscore = None
-
-        if hostscore is not None:
-            while True:
-                try:
-                    graphyte.send('btt.' + node + '.host.active_contract_num', active_contract_num, timestamp=timestamp)
-                    graphyte.send('btt.' + node + '.host.compensation_paid', compensation_paid, timestamp=timestamp)
-                    graphyte.send('btt.' + node + '.host.compensation_outstanding', compensation_outstanding, timestamp=timestamp)
-                except OSError:
-                    continue
-                break
-
-
 
 ### Vault WBTT Balance
-  
-        
+
+graphite_hostname = 'graphite'
+graphite_port = 2004
+
+carbon = CarbonClient(graphite_hostname, graphite_port)
+pickle = []
 
 client = docker.from_env()
 for container in client.containers.list():
     if "btfs" in container.name:
         fetch_btfs_data(container)
+
+time.sleep(5)
+carbon.send_pickle(pickle)
+
+
