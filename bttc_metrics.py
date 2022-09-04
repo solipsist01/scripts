@@ -80,22 +80,24 @@ def fetch_btfs_data(container):
 
     if response is not None:
 ### fetch bttc onchain balance
+        bttc_addr_btt_balance = 0
         bttcaddress = response['BttcAddress']
-        response = None
-        uri = "http://" + container.name + ":5001/api/v1/cheque/bttbalance?arg=" + bttcaddress
-        
-        try:
-            response = requests.post(uri).json()
-        except:
-            ConnectionError
+        while bttc_addr_btt_balance == 0:
             response = None
-
-        if response is not None:
+            uri = "http://" + container.name + ":5001/api/v1/cheque/bttbalance?arg=" + bttcaddress
+            
             try:
-                bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
-                pickle.append(('mining.btt.' + node + '.bttc_chain.bttc_addr_btt_balance', (timestamp, bttc_addr_btt_balance)))
+                response = requests.post(uri).json()
             except:
-                KeyError
+                ConnectionError
+                response = None
+
+            if response is not None:
+                try:
+                    bttc_addr_btt_balance = round(float(response['balance']) / 1000000000000000000)
+                    pickle.append(('mining.btt.' + node + '.bttc_chain.bttc_addr_btt_balance', (timestamp, bttc_addr_btt_balance)))
+                except:
+                    KeyError
 
 
     ### fetch host score and storage in use
