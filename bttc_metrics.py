@@ -110,17 +110,16 @@ def fetch_btfs_data(container):
 
     if response is not None:
         try:
-            hostscore = response['host_stats']['level']
-            storage_used = response['host_stats']['storage_used']
+            hostscore = int(response['host_stats']['uptime_level']) + int(response['host_stats']['age_level']) + int(response['host_stats']['version_level']) + int(response['host_stats']['active_level'])
             pickle.append(('mining.btt.' + node + '.host.score', (timestamp, hostscore)))
-            pickle.append(('mining.btt.' + node + '.host.storage_used', (timestamp, storage_used)))
+            pickle.append(('mining.btt.' + node + '.host.uptime_level', (timestamp, response['host_stats']['uptime_level'])))
+            pickle.append(('mining.btt.' + node + '.host.age_level', (timestamp, response['host_stats']['age_level'])))
+            pickle.append(('mining.btt.' + node + '.host.version_level', (timestamp, response['host_stats']['version_level'])))
+            pickle.append(('mining.btt.' + node + '.host.active_level', (timestamp, response['host_stats']['active_level'])))
+            pickle.append(('mining.btt.' + node + '.host.level', (timestamp, response['host_stats']['level'])))            
+            pickle.append(('mining.btt.' + node + '.host.storage_used', (timestamp, response['host_stats']['storage_used'])))
         except:
             KeyError
-
-    
-
-        
-        
 
 ### fetch Contract Data ####
     uri = "http://" + container.name + ":5001/api/v1/storage/contracts/stat?arg=host"
@@ -132,12 +131,9 @@ def fetch_btfs_data(container):
 
     if response is not None:
         try:
-            active_contract_num = response['active_contract_num']
-            compensation_paid = response['compensation_paid']
-            compensation_outstanding = response['compensation_outstanding']
-            pickle.append(('mining.btt.' + node + '.host.active_contract_num', (timestamp, active_contract_num)))
-            pickle.append(('mining.btt.' + node + '.host.compensation_paid', (timestamp, compensation_paid)))
-            pickle.append(('mining.btt.' + node + '.host.compensation_outstanding', (timestamp, compensation_outstanding)))
+            pickle.append(('mining.btt.' + node + '.host.active_contract_num', (timestamp, response['active_contract_num'])))
+            pickle.append(('mining.btt.' + node + '.host.compensation_paid', (timestamp, response['compensation_paid'])))
+            pickle.append(('mining.btt.' + node + '.host.compensation_outstanding', (timestamp, response['compensation_outstanding'])))
         except:
             KeyError
 
@@ -162,8 +158,8 @@ carbon = CarbonClient(graphite_hostname, graphite_port)
 pickle = []
 
 main()
-
 carbon.send_pickle(pickle)
+#print(pickle)
 
 
 
