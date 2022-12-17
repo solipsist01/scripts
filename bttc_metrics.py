@@ -159,7 +159,7 @@ pickle = []
 
 main()
 carbon.send_pickle(pickle)
-#print(pickle)
+print(pickle)
 
 
 
