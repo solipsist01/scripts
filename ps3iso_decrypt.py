@@ -22,7 +22,7 @@ def main():
     decryption_key_path = '/path/to/your/decryptionkeys'
     #path to all your encrypted iso's (.iso)
     encrypted_isos_path = '/path/to/your/encryptedisos'
-    #destionation folder for decrypted iso's
+    ##destionation folder for decrypted iso's
     decrypted_isos_path = '/path/to/your/decryptedisos'
 
     for filename in glob.iglob(encrypted_isos_path + '**/*.iso', recursive=True):
