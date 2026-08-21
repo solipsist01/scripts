@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # pip3 install pynput --break-system-packages
-# sudo apt install python3-tk python3-dev xdotool
+# sudo apt install python3-tk python3-dev xdotool libinput-tools
 
 import time
 import threading
